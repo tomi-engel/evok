@@ -288,7 +288,7 @@ class OwBusDriver(multiprocessing.Process):
             self.register_in_caller(obj)
             obj.__bus = self
             #Devices.register_device(5,obj)
-            logger.debug("New sensor %s - %s", str(obj.type),str(obj.circuit))
+            logger.debug("New sensor %s - %s (refresh interval: %s)", str(obj.type),str(obj.circuit), str(obj.interval))
         elif type(obj) is tuple:
             # obj[0] - circuit/address of sensor
             # obj[1] - Boolean(True) -> Lost
@@ -316,8 +316,9 @@ class OwBusDriver(multiprocessing.Process):
                     mysensor = next(x for x in self.mysensors if x.address == address)
                     #print "Sensor found " + str(mysensor.circuit)
                 except Exception:
-                    #if not found, create new one
-                    mysensor = MySensorFabric(address, sens.type, self, interval=15)
+                    # if not found, create a new one
+                    # The refresh interval will be based on the default command inverval of the bus
+                    mysensor = MySensorFabric(address, sens.type, self)
                     if mysensor:
                         # notify master process about new sensor
                         self.resultQ.send(mysensor)
